@@ -71,4 +71,5 @@
 		from (#D90000),
 		to (#800000));
 }
-
+.wb{
+background:red;}
