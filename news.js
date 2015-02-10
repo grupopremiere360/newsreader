@@ -3,13 +3,19 @@ const Lang = imports.lang;
 const Gtk = imports.gi.Gtk;
 const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
-const pango = imports.gi.Pango;
-const Webkit = imports.gi.WebKit;
+const Pango = imports.gi.Pango;
+const WebKit = imports.gi.WebKit;
 
 const Application = new Lang.Class({
-    //A Class requires an explicit Name parameter. This is the Class Name.
     Name: 'Application',
-
+    MIN_CONTENT_WIDTH: 400,
+    MIN_CONTENT_HEIGHT: 300,	
+    PATH_CSS: 'file:///home/gp360/Desktop/app-gtk/news/prototype.css',
+    JSON_FILE: 'my.json',
+    TEXT_BTN_BACK : 'Regresar a todas las noticias',
+    TEXT_BTN_MORE : 'Ver mas',
+    PATH_IMGS : '/home/gp360/Desktop/app-gtk/news/img/',
+    PATH_FILE : '/home/gp360/Desktop/app-gtk/news/',
     //create the application
     _init: function() {
         this.application = new Gtk.Application();
@@ -28,7 +34,7 @@ const Application = new Lang.Class({
 
         //Init style context
         let provider = new Gtk.CssProvider();
-        let css_file = Gio.File.new_for_uri('file:///home/gp360/Desktop/app-gtk/news/prototype.css');
+        let css_file = Gio.File.new_for_uri(this.PATH_CSS);
         provider.load_from_file(css_file);
 
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),
@@ -38,6 +44,7 @@ const Application = new Lang.Class({
        /*
         * Stack and frames 
         */
+
         this.list =  new Gtk.Frame({"border-width":0});
         this.detail =  new Gtk.Frame({"border-width":0});
 
@@ -45,6 +52,8 @@ const Application = new Lang.Class({
             homogeneous: true,
             transition_duration: 100,
             transition_type: Gtk.StackTransitionType.SLIDE_LEFT,
+	        width_request: this.MIN_CONTENT_WIDTH,
+            height_request: this.MIN_CONTENT_HEIGHT,
         });
         
         this.stack.add(this.list);
@@ -53,7 +62,7 @@ const Application = new Lang.Class({
         this.detail.get_style_context().add_class('detail');
         this.list.get_style_context().add_class('list');
 
-        /*
+       /*
         * elements in frame list
         */
 
@@ -66,7 +75,7 @@ const Application = new Lang.Class({
         let exitButton = new Gtk.Button({ label: " X " });
         exitButton.set_size_request(20,20);
         exitButton.connect('clicked',Lang.bind(this,this._exit));
-        exitButton.get_style_context().add_class("exit");
+        exitButton.get_style_context().add_class('exit');
         
         let align = new Gtk.Alignment({xalign: 1.0, yalign: 0.0, 
                                            xscale: 0.0, yscale: 0.0});
@@ -75,10 +84,10 @@ const Application = new Lang.Class({
 
         vboxParent.add(vboxBlank);
 
-        vboxParent.get_style_context().add_class("vbox");
-        this.arrayData = load_file('my.json');
+        vboxParent.get_style_context().add_class('vbox');
+        this.arrayData = load_file(this.JSON_FILE);
 
-        let principalGrid = new Gtk.Grid({
+        let mainGrid = new Gtk.Grid({
             "column-homogeneous": true
         });
 
@@ -86,7 +95,7 @@ const Application = new Lang.Class({
         let f = 0;
         
         for (var i = 0; i < this.arrayData.length; i++){
-            principalGrid.attach(this._make_block(this.arrayData[i]), c, f, 1, 1);
+            mainGrid.attach(this._make_block(this.arrayData[i]), c, f, 1, 1);
             if (c == 0){
                 c++;
             }else{
@@ -95,45 +104,44 @@ const Application = new Lang.Class({
             }
         }
 
-        principalGrid.get_style_context().add_class("grid");
+        mainGrid.get_style_context().add_class('grid');
 
-        vboxParent.add(principalGrid);
+        vboxParent.add(mainGrid);
 
         listScrollWindow.add_with_viewport(vboxParent);
 
         this.list.add(listScrollWindow);
 
-        /*
+       /*
         * elements in frame detail
         */
 
         this.scrolledWindowDetail = new Gtk.ScrolledWindow();   
 
         let veticalBoxDetail  = new  Gtk.VBox({homogeneous: false, spacing:15});
+        let btnBack = new Gtk.Button({ label: this.TEXT_BTN_BACK });
+        btnBack.set_size_request(20,10);
+        btnBack.connect('clicked',Lang.bind(this,this._showList));
+
+        let alignmentSetting = new Gtk.Alignment({xalign: 1.0, yalign: 0.0,
+                                                  xscale: 0.0, yscale: 0.0});
+        alignmentSetting.add(btnBack);
+
+        veticalBoxDetail.pack_start(alignmentSetting, false, false, 0);	
 
         this.titleDetail = new Gtk.Label({ label: "" });
         veticalBoxDetail.add(this.titleDetail);
-        this.titleDetail.get_style_context().add_class("title");
+        this.titleDetail.get_style_context().add_class('title');
         this.titleDetail.set_line_wrap(true);
 
         this.imageDetail = new Gtk.Image();
         this.imageDetail.set_from_file(null);
         veticalBoxDetail.add(this.imageDetail);
 
-        this.contentWebViewDetail = new Webkit.WebView();
+        this.contentWebViewDetail = new WebKit.WebView();
         this.contentWebViewDetail.load_html_string("","");
-
+	
         veticalBoxDetail.add(this.contentWebViewDetail);
-
-        let backIndividual = new Gtk.Button({ label: "Regresar a todas las noticias" });
-        backIndividual.set_size_request(20,10);
-        backIndividual.connect('clicked',Lang.bind(this,this._showList));
-
-        let alignmentSetting = new Gtk.Alignment({xalign: 1.0, yalign: 0.0,
-                                           xscale: 0.0, yscale: 0.0});
-        alignmentSetting.add(backIndividual);
-
-        veticalBoxDetail.pack_start(alignmentSetting, false, false, 0);
 
         this.scrolledWindowDetail.add_with_viewport(veticalBoxDetail);
 
@@ -171,26 +179,27 @@ const Application = new Lang.Class({
         this.stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
         this.stack.visible_child = this.detail;
         
-        this.titleDetail.set_text(json.title)
+        this.titleDetail.set_text(json.title);
         this.imageDetail.set_from_file("img/"+json.content_image);
         this.contentWebViewDetail.load_html_string(json.content,"");
     },
     
-    //show list 
+    //show list news
     _showList: function(){	
         this.stack.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
         this.stack.visible_child = this.list;
     },
     
-    //make blok item
+    //make block item
     _make_block : function (json) {
+        
     // The text styling for the heading is done with simple Pango markup.
-        let titleTemp = json.title;
-        let heading = new Gtk.Label({"label": "  " + titleTemp + "                        "});
-        heading.set_ellipsize(pango.EllipsizeMode.END);
-        heading.set_line_wrap_mode(pango.WrapMode.CHAR);
+        let titleArticle = json.title;
+        let heading = new Gtk.Label({"label": "  " + titleArticle + "                        "});
+        heading.set_ellipsize(Pango.EllipsizeMode.END);
+        heading.set_line_wrap_mode(Pango.WrapMode.CHAR);
         heading.set_max_width_chars(40);
-        heading.get_style_context().add_class("title");
+        heading.get_style_context().add_class('title');
         
         // WebView for Description
         let webViewDescription = this._set_description_webView(json.title);
@@ -201,13 +210,13 @@ const Application = new Lang.Class({
         let grid = new Gtk.Grid();
         grid.set_size_request(500, 200);
         
-        let buttonShow = new Gtk.Button({label:"Ver mas"});
+        let buttonShow = new Gtk.Button({label: this.TEXT_BTN_MORE});
         buttonShow.connect('clicked',this._showDetail.bind(this,json));
         buttonShow.set_size_request(100,50);
-        buttonShow.get_style_context().add_class("button");
+        buttonShow.get_style_context().add_class('button');
 
         let alignmentSetting = new Gtk.Alignment({xalign: 1.0, yalign: 0.0,
-                                           xscale: 0.0, yscale: 0.0});
+                                                  xscale: 0.0, yscale: 0.0});
 
         alignmentSetting.add(buttonShow);
 
@@ -215,7 +224,7 @@ const Application = new Lang.Class({
         grid.attach (heading, 3, 0, 8, 1, Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL);
         grid.attach (webViewDescription, 3, 1, 8, 1);
         grid.attach (alignmentSetting, 9, 2, 2, 1);
-        grid.get_style_context().add_class("item");
+        grid.get_style_context().add_class('item');
 
         return grid;
     },
@@ -227,34 +236,36 @@ const Application = new Lang.Class({
     
     //set image webview in item notice
     _set_image_webView: function(imageTest){
-        var webViewImage = new Webkit.WebView();
-        var htmlImage = '<div style="position:relative; overflow:hidden; width:115px; height:115px"><img height="100%" style="position:absolute; left:auto; right:auto" src="/home/gp360/Desktop/app-gtk/news/img/'+imageTest+'"/></div>';
+
+        let style_div = "position:relative; overflow:hidden;width:115px; height:115px";
+        let style_picture = "position:absolute; left:auto; right:auto";
+                             
+        let webViewImage = new WebKit.WebView();
+        let htmlImage = '<div style="'+ style_div +'"><img height="100%" style="'+ style_picture +'" src="'+ this.PATH_IMGS + imageTest+'"/></div>';
         webViewImage.load_html_string(htmlImage, 'file:///');
         return webViewImage;
     },
     
     //set description webview in item notice
     _set_description_webView: function(title){
-        var webViewDescription = new Webkit.WebView();
+        var webViewDescription = new WebKit.WebView();
         webViewDescription.load_html_string(title, '');
         return webViewDescription;
-    }
+    },
 });
+
+function load_file (filename){
+        let input_file = Gio.file_new_for_path("/home/gp360/Desktop/app-gtk/news/" + filename);
+        let size = input_file.query_info(
+            "standard::size",
+            Gio.FileQueryInfoFlags.NONE,
+            null).get_size();
+        let stream = input_file.open_readwrite(null).get_input_stream();
+        let data = stream.read_bytes(size, null).get_data();
+        stream.close(null);
+        return JSON.parse(data);
+}
 
 //run the application
 let app = new Application();
 app.application.run(ARGV);
-
-function load_file(filename){
-
-    let input_file = Gio.file_new_for_path("/home/gp360/Desktop/app-gtk/news/" + filename);
-    let size = input_file.query_info(
-        "standard::size",
-        Gio.FileQueryInfoFlags.NONE,
-        null).get_size();
-    let stream = input_file.open_readwrite(null).get_input_stream();
-    let data = stream.read_bytes(size, null).get_data();
-    stream.close(null);
-    return JSON.parse(data);
-}
-

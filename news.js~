@@ -9,7 +9,10 @@ const Webkit = imports.gi.WebKit;
 const Application = new Lang.Class({
     //A Class requires an explicit Name parameter. This is the Class Name.
     Name: 'Application',
-
+    MIN_CONTENT_WIDTH: 400,
+    MIN_CONTENT_HEIGHT: 300,	
+    PATH_CSS: 'file:///home/gp360/Desktop/app-gtk/news/prototype.css',
+    JSON_FILE: 'my.json',
     //create the application
     _init: function() {
         this.application = new Gtk.Application();
@@ -28,7 +31,7 @@ const Application = new Lang.Class({
 
         //Init style context
         let provider = new Gtk.CssProvider();
-        let css_file = Gio.File.new_for_uri('file:///home/gp360/Desktop/app-gtk/news/prototype.css');
+        let css_file = Gio.File.new_for_uri(this.PATH_CSS);
         provider.load_from_file(css_file);
 
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),
@@ -45,6 +48,8 @@ const Application = new Lang.Class({
             homogeneous: true,
             transition_duration: 100,
             transition_type: Gtk.StackTransitionType.SLIDE_LEFT,
+	    width_request: this.MIN_CONTENT_WIDTH,
+            height_request: this.MIN_CONTENT_HEIGHT,
         });
         
         this.stack.add(this.list);
@@ -76,7 +81,7 @@ const Application = new Lang.Class({
         vboxParent.add(vboxBlank);
 
         vboxParent.get_style_context().add_class("vbox");
-        this.arrayData = load_file('my.json');
+        this.arrayData = load_file(this.JSON_FILE);
 
         let principalGrid = new Gtk.Grid({
             "column-homogeneous": true
@@ -111,6 +116,16 @@ const Application = new Lang.Class({
 
         let veticalBoxDetail  = new  Gtk.VBox({homogeneous: false, spacing:15});
 
+	let backIndividual = new Gtk.Button({ label: "Regresar a todas las noticias" });
+        backIndividual.set_size_request(20,10);
+        backIndividual.connect('clicked',Lang.bind(this,this._showList));
+
+        let alignmentSetting = new Gtk.Alignment({xalign: 1.0, yalign: 0.0,
+                                                  xscale: 0.0, yscale: 0.0});
+        alignmentSetting.add(backIndividual);
+
+        veticalBoxDetail.pack_start(alignmentSetting, false, false, 0);	
+
         this.titleDetail = new Gtk.Label({ label: "" });
         veticalBoxDetail.add(this.titleDetail);
         this.titleDetail.get_style_context().add_class("title");
@@ -122,18 +137,8 @@ const Application = new Lang.Class({
 
         this.contentWebViewDetail = new Webkit.WebView();
         this.contentWebViewDetail.load_html_string("","");
-
+	
         veticalBoxDetail.add(this.contentWebViewDetail);
-
-        let backIndividual = new Gtk.Button({ label: "Regresar a todas las noticias" });
-        backIndividual.set_size_request(20,10);
-        backIndividual.connect('clicked',Lang.bind(this,this._showList));
-
-        let alignmentSetting = new Gtk.Alignment({xalign: 1.0, yalign: 0.0,
-                                           xscale: 0.0, yscale: 0.0});
-        alignmentSetting.add(backIndividual);
-
-        veticalBoxDetail.pack_start(alignmentSetting, false, false, 0);
 
         this.scrolledWindowDetail.add_with_viewport(veticalBoxDetail);
 
@@ -145,9 +150,7 @@ const Application = new Lang.Class({
             page_increment: 0 }));
 
         this.detail.add(this.scrolledWindowDetail);
-
         this._window.add(this.stack);
-
     },
 
     //handler for 'activate' signal
@@ -173,7 +176,7 @@ const Application = new Lang.Class({
         this.stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
         this.stack.visible_child = this.detail;
         
-        this.titleDetail.set_text(json.title)
+        this.titleDetail.set_text(json.title);
         this.imageDetail.set_from_file("img/"+json.content_image);
         this.contentWebViewDetail.load_html_string(json.content,"");
     },
@@ -184,7 +187,7 @@ const Application = new Lang.Class({
         this.stack.visible_child = this.list;
     },
     
-    //make blok item
+    //make block item
     _make_block : function (json) {
     // The text styling for the heading is done with simple Pango markup.
         let titleTemp = json.title;
