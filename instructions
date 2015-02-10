@@ -15,7 +15,7 @@ Correr Descarga de articulos.
     - http
 3) es necesario que exista la carpeta img y permisos para la misma
 4) correr el archivo llamado "downloadArticles.js" 
-   - con el comando  "node downloadArticles.js"
+   - con el comando  "nodejs downloadArticles.js"
 
 Muestra de articulos
 
