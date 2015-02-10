@@ -28,7 +28,7 @@ const Application = new Lang.Class({
 
         //Init style context
         let provider = new Gtk.CssProvider();
-        let css_file = Gio.File.new_for_uri('file:///home/gp360/Desktop/app-gtk/news/prototype.css');
+        let css_file = Gio.File.new_for_uri('file:///home/gp360/Desktop/app-gtk/prototype.css');
         provider.load_from_file(css_file);
 
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),
@@ -228,7 +228,7 @@ const Application = new Lang.Class({
     //set image webview in item notice
     _set_image_webView: function(imageTest){
         var webViewImage = new Webkit.WebView();
-        var htmlImage = '<div style="position:relative; overflow:hidden; width:115px; height:115px"><img height="100%" style="position:absolute; left:auto; right:auto" src="/home/gp360/Desktop/app-gtk/news/img/'+imageTest+'"/></div>';
+        var htmlImage = '<div style="position:relative; overflow:hidden; width:115px; height:115px"><img height="100%" style="position:absolute; left:auto; right:auto" src="/home/gp360/Desktop/app-gtk/img/'+imageTest+'"/></div>';
         webViewImage.load_html_string(htmlImage, 'file:///');
         return webViewImage;
     },
@@ -247,7 +247,7 @@ app.application.run(ARGV);
 
 function load_file(filename){
 
-    let input_file = Gio.file_new_for_path("/home/gp360/Desktop/app-gtk/news/" + filename);
+    let input_file = Gio.file_new_for_path("/home/gp360/Desktop/app-gtk/" + filename);
     let size = input_file.query_info(
         "standard::size",
         Gio.FileQueryInfoFlags.NONE,

@@ -36,7 +36,7 @@ function sleep(milliseconds){
 }
 
 function writeJsonFile(){
-	var outputFilename = '/home/gp360/Desktop/app-gtk/news/my.json';
+	var outputFilename = '/home/gp360/Desktop/app-gtk/my.json';
 	fs.writeFile(outputFilename, JSON.stringify(arrayData, null, 4), function(err){});
 }
 
@@ -73,7 +73,7 @@ function getDom (article){
 					writeJsonFile();
 				}
 				
-				request(img).pipe(fs.createWriteStream('/home/gp360/Desktop/app-gtk/news/img/'+nombre));	
+				request(img).pipe(fs.createWriteStream('/home/gp360/Desktop/app-gtk/img/'+nombre));	
 
 		});
 }

@@ -145,9 +145,7 @@ const Application = new Lang.Class({
             page_increment: 0 }));
 
         this.detail.add(this.scrolledWindowDetail);
-
         this._window.add(this.stack);
-
     },
 
     //handler for 'activate' signal
