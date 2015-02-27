@@ -1,5 +1,5 @@
 //Includes libs
-var feedparser = require('ortoo-feedparser');
+var feedParser = require('ortoo-feedparser');
 var cheerio = require('cheerio');
 var request = require('request');
 var fs = require('fs');
@@ -8,7 +8,8 @@ var arrayData = [];
 var countArticles = 0;
 var countGetDom = 0;
 var urlRss = 'http://panoramanoticias.com/?feed=rss2';
-
+var path_json = '/home/gp360/Desktop/app-gtk/news/my.json';
+var path_imgs = '/home/gp360/Desktop/app-gtk/news/img/';
 
 http.createServer(function (req, res){
 	res.writeHead(200, {'Content-Type':'text/plain'});
@@ -19,7 +20,7 @@ http.createServer(function (req, res){
 console.log('Server prototype running at http://127.0.0.1:1337/');
 
 function readFeed(url){
-	feedparser.parseUrl(url).on('article', function(article){
+	feedParser.parseUrl(url).on('article', function(article){
 		var DomDom = getDom(article);
 		sleep(5000);
 		countArticles++;
@@ -36,23 +37,28 @@ function sleep(milliseconds){
 }
 
 function writeJsonFile(){
+<<<<<<< HEAD
 	var outputFilename = '/home/gp360/Desktop/app-gtk/my.json';
+=======
+	var outputFilename = path_json;
+>>>>>>> dcae5697a46411065140eb768593062d180c595c
 	fs.writeFile(outputFilename, JSON.stringify(arrayData, null, 4), function(err){});
 }
 
 function getDom (article){
 		
-		var opts = {
-			url : article.link,
-			strictSLS:false,
-			rejectUnauthorized: false,
-			agent:false,
-			metohod:'GET'
-		};
-	   
-	   request(opts,function(err, response, body){
-				var $ = cheerio.load(body);
+	var opts = {
+		url : article.link,
+		strictSLS:false,
+		rejectUnauthorized: false,
+		agent:false,
+		metohod:'GET'
+	};
+   
+    request(opts,function(err, response, body){
+		var $ = cheerio.load(body);
 
+<<<<<<< HEAD
 				var img = $('.content article .single-post-thumb img').attr('src');
 				var nombre = getNameImage(img);
 				var notice = $('.content article .post-inner .entry').html();				
@@ -73,9 +79,32 @@ function getDom (article){
 					writeJsonFile();
 				}
 				
-				request(img).pipe(fs.createWriteStream('/home/gp360/Desktop/app-gtk/news/img/'+nombre));	
+				request(img).pipe(fs.createWriteStream('/home/gp360/Desktop/app-gtk/img/'+nombre));	
+=======
+		var img = $('.content article .single-post-thumb img').attr('src');
+		var nameImageArticle = getNameImage(img);
+		var notice = $('.content article .post-inner .entry').html();				
+		    notice = notice.replace(/href=/g, 'url-tag=');
+							
+		var myData = {
+			title:article.title,
+			link:article.link,
+			publication:article.pubDate,
+			description:article.description,
+			content: notice,
+			content_image : nameImageArticle
+		}
+		arrayData.push(myData);	
+		countGetDom++;
+		
+		if (countGetDom == countArticles){
+			writeJsonFile();
+		}
+		
+		request(img).pipe(fs.createWriteStream( path_imgs + nameImageArticle));	
+>>>>>>> dcae5697a46411065140eb768593062d180c595c
 
-		});
+	});
 }
 
 function getNameImage(src){
