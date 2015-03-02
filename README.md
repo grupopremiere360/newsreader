@@ -1,4 +1,4 @@
-# newsreader
+# newsReader
 
 # downloadArticles.js
 
